@@ -1,0 +1,29 @@
+{
+  "name": "colophon-archive",
+  "version": "0.0.1",
+  "description": "Where colophons are written, tested and kept",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node --watch generator/serve.js",
+    "prettier:check": "npx prettier . --check",
+    "prettier:write": "npx prettier . --write",
+    "lint": "eslint 'generator/**/*.js' 'src/**/*.js' 'eslint.config.js'",
+    "check": "npm run prettier:check && npm run lint"
+  },
+  "author": "tulinmola",
+  "license": "MIT",
+  "dependencies": {
+    "markdown-it": "^15.0.0",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.1",
+    "globals": "^17.11.0",
+    "prettier": "^3.9.6"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
