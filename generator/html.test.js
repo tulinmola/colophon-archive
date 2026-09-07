@@ -1,6 +1,6 @@
-import * as client from "../src/js/html.js"
 import * as generator from "./html.js"
 import { describe, expect, it } from "vitest"
+import clientHtml from "../src/js/html.js"
 
 describe("escapeHtml", function () {
   it("escapes the ampersand first, so nothing is escaped twice", function () {
@@ -46,17 +46,9 @@ describe("html", function () {
   })
 })
 
-describe("the client's copy, which must answer alike until it grows a DOM", function () {
-  it("escapes the same", function () {
-    const text = `a "b" <c> &d`,
-      byClient = client.escapeHtml(text),
-      byGenerator = generator.escapeHtml(text)
-
-    expect(byClient).toBe(byGenerator)
-  })
-
-  it("composes the same", function () {
-    const byClient = client.html`<p>${"x"}</p>`,
+describe("the client's tag, which composes markup the generator never sees", function () {
+  it("composes the same as the generator's", function () {
+    const byClient = clientHtml`<p>${"x"}</p>`,
       byGenerator = generator.html`<p>${"x"}</p>`
 
     expect(byClient).toBe(byGenerator)

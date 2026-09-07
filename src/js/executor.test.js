@@ -33,6 +33,18 @@ describe("execute, which runs where there is no document at all", function () {
     expect(result.error).toMatch(/^SyntaxError: /u)
   })
 
+  it("binds an input to the name it was given, and to nothing else", async function () {
+    const result = await execute("return two + 2", { two: 2 })
+
+    expect(result).toEqual({ value: 4 })
+  })
+
+  it("leaves a name it was given no input for unbound", async function () {
+    const result = await execute("return two", { three: 3 })
+
+    expect(result).toEqual({ error: "ReferenceError: two is not defined" })
+  })
+
   it("shares the globals of its host with every other cell, which nothing prevents", async function () {
     await execute("globalThis.left = 1")
 

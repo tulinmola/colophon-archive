@@ -90,6 +90,19 @@ colophon-cell {
     margin: 0;
   }
 
+  & details {
+    margin-top: 0.6rem;
+  }
+
+  & summary {
+    color: var(--faint);
+    cursor: pointer;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
   & menu {
     display: flex;
     gap: 0.4rem;
@@ -130,6 +143,11 @@ output {
 
   &.failed {
     color: light-dark(#a8331f, #f19c8b);
+  }
+
+  &.pending {
+    color: var(--faint);
+    font-style: italic;
   }
 
   &[hidden] {

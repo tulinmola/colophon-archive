@@ -1,5 +1,5 @@
-import { escapeHtml, html } from "./html.js"
 import execute from "./executor.js"
+import html from "./html.js"
 
 function shownValue(value) {
   const asJson = JSON.stringify(value, null, 2),
@@ -11,52 +11,113 @@ function shownValue(value) {
 class Cell extends HTMLElement {
   #button
   #output
+  #result
   #teardown
 
-  get signal() {
-    return this.#teardown.signal
+  get result() {
+    this.#result ??= this.#resolve()
+
+    return this.#result
   }
 
   connectedCallback() {
     this.#teardown = new AbortController()
+    const { signal } = this.#teardown
 
-    const source = this.querySelector("code").textContent
+    const block = this.querySelector("pre")
 
     this.innerHTML = html`
-      <pre><code>${escapeHtml(source)}</code></pre>
+      <output class="pending">not yet derived</output>
       <menu>
         <li><button type="button">Run</button></li>
       </menu>
-      <output hidden></output>
+      <details>
+        <summary>The working</summary>
+        ${block.outerHTML}
+      </details>
     `
 
     this.#button = this.querySelector("button")
     this.#output = this.querySelector("output")
 
-    this.#button.addEventListener("click", this.run.bind(this), { signal: this.signal })
+    this.#button.addEventListener("click", this.run.bind(this), { signal })
+
+    this.#showWhatIsKnown()
   }
 
   disconnectedCallback() {
     this.#teardown.abort()
   }
 
-  async run() {
-    const { signal } = this,
-      code = this.querySelector("code")
+  run() {
+    return this.result
+  }
 
-    this.#button.disabled = true
+  #above(id) {
+    const found = this.getRootNode().querySelectorAll("colophon-cell"),
+      cells = [...found],
+      above = cells.slice(0, cells.indexOf(this))
 
-    const result = await execute(code.textContent),
-      failed = result.error != null
+    return above.find(cell => cell.id == id)
+  }
 
-    if (signal.aborted) {
+  async #showWhatIsKnown() {
+    const derived = this.#result
+    if (!derived) {
       return
     }
 
+    const result = await derived
+    this.#show(result)
+  }
+
+  async #resolve() {
+    const { signal } = this.#teardown
+
+    this.#button.disabled = true
+
+    const result = await this.#derive()
+    if (signal.aborted) {
+      return result
+    }
+
+    this.#show(result)
+    this.#button.disabled = false
+
+    return result
+  }
+
+  async #derive() {
+    const from = this.getAttribute("from"),
+      ids = from ? from.trim().split(/\s+/u) : [],
+      inputs = {}
+
+    for (const id of ids) {
+      const cell = this.#above(id)
+      if (!cell) {
+        return { error: `derives from ${id}, which no cell above it is` }
+      }
+
+      const input = await cell.result
+      if (input.error) {
+        return { error: `derives from ${id}, which failed` }
+      }
+
+      inputs[id] = input.value
+    }
+
+    const block = this.querySelector("pre"),
+      source = block.textContent
+
+    return execute(source, inputs)
+  }
+
+  #show(result) {
+    const failed = result.error != null
+
     this.#output.textContent = failed ? result.error : shownValue(result.value)
     this.#output.classList.toggle("failed", failed)
-    this.#output.hidden = false
-    this.#button.disabled = false
+    this.#output.classList.remove("pending")
   }
 }
 

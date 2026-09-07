@@ -1,9 +1,12 @@
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
-async function execute(source) {
+async function execute(source, inputs = {}) {
+  const names = Object.keys(inputs),
+    values = Object.values(inputs)
+
   try {
-    const body = new AsyncFunction(source),
-      value = await body()
+    const body = new AsyncFunction(...names, source),
+      value = await body(...values)
 
     return { value }
   } catch (failure) {
