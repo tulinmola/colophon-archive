@@ -7,9 +7,10 @@
   "scripts": {
     "start": "vite",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "prettier:check": "npx prettier . --check",
     "prettier:write": "npx prettier . --write",
-    "lint": "eslint 'generator/**/*.js' 'src/**/*.js' 'vite.config.js' 'eslint.config.js'",
+    "lint": "eslint 'generator/**/*.js' 'src/**/*.js' 'e2e/**/*.js' 'vite.config.js' 'playwright.config.js' 'eslint.config.js'",
     "check": "npm run prettier:check && npm run lint && npm test"
   },
   "author": "tulinmola",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
     "eslint": "^10.8.1",
     "globals": "^17.11.0",
     "prettier": "^3.9.6",

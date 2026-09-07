@@ -19,8 +19,9 @@ A published page reads with no execution at all: the statics are the publication
 - A snapshot is not a witness. The witness is the released work, named by its hash; a snapshot hangs from it as an artifact.
 - Measurements are ours. Screenshots and short extracts are quotation. Snapshots, disc images and complete listings are never published.
 - An artifact lives in the colophon that cites it, never in a shared library.
-- A cell is a fenced block whose language is braced, which is Quarto's spelling: every other renderer leaves an unknown language alone, so a cell degrades to a plain code block wherever else it is read.
-- A cell runs on its own. Checking one claim must never mean running five others first.
+- A cell is an element an author writes, holding one block of code. Attributes carry machine values — `id`, and `from` for what it derives from; prose belongs in the markdown around it and never in an attribute.
+- A cell needs a blank line after its opening tag and before its closing one, or markdown takes the fence for part of the HTML block and the cell is left with no source.
+- A cell derives what it needs, and every cell it reaches answers under its own block, so nothing runs unseen.
 
 ## Code
 
@@ -47,9 +48,10 @@ A published page reads with no execution at all: the statics are the publication
 
 - `npm start` serves on localhost. Through the workspace proxy: `npx vite --config ../vite-workspace.config.js`, because the host is the workspace's and never enters this repository.
 - `npm run check` before handing work back: Prettier, ESLint and the tests.
-- Tests cover what the browser cannot be asked about cheaply — escaping, the fence rule, error paths — and the executor, whose whole claim is that it runs with no document in sight. A module gets its tests in the commit that writes it.
+- Tests in Node cover what needs no browser: escaping, error paths, and the executor, whose claim is that it runs with no document in sight. The browser tests cover what only a browser can answer — that a cell upgrades, derives in the open, and holds to the rules about order and failure. A module gets its tests in the commit that writes it.
+- `npm run test:e2e` drives a browser, and needs one fetched once with `npx playwright install chromium`.
 - Never commit, never push. The human reviews; the human commits.
 
 ## Unsettled
 
-What the element does in a browser, which nothing in this repository yet checks. What a recorded result looks like on disk. Running a stranger's code — and rendering it, since markdown-it is configured with `html: true` and a colophon body may carry markup of its own.
+What a recorded result looks like on disk. Running a stranger's code — and rendering it, since markdown-it is configured with `html: true` and a colophon body may carry markup of its own.
