@@ -69,14 +69,15 @@ td {
   text-align: left;
 }
 
-.cell {
+colophon-cell {
   border-left: 2px solid var(--faint);
+  display: block;
   margin: 1.5rem 0;
   padding-left: 1rem;
 
   &::before {
     color: var(--faint);
-    content: "cell · " attr(data-language);
+    content: "cell · " attr(language);
     display: block;
     font-family: ui-monospace, monospace;
     font-size: 0.72rem;
@@ -87,5 +88,51 @@ td {
 
   & pre {
     margin: 0;
+  }
+
+  & menu {
+    display: flex;
+    gap: 0.4rem;
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+  }
+}
+
+button {
+  background: var(--quoted);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  color: inherit;
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  padding: 0.3rem 0.9rem;
+  text-transform: uppercase;
+
+  &:hover:not(:disabled) {
+    border-color: var(--faint);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+  }
+}
+
+output {
+  border-left: 2px solid var(--faint);
+  display: block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.9rem;
+  margin-top: 0.6rem;
+  padding-left: 1rem;
+  white-space: pre-wrap;
+
+  &.failed {
+    color: light-dark(#a8331f, #f19c8b);
+  }
+
+  &[hidden] {
+    display: none;
   }
 }

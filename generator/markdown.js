@@ -1,31 +1,57 @@
 import MarkdownIt from "markdown-it"
+import { html } from "./html.js"
 
-// Quarto's spelling: a fence whose language is braced is executable, and a
-// plain one is code being shown. Every other renderer, GitHub included, leaves
-// an unknown language alone, so a cell degrades to a code block everywhere.
-const CELL = /^\{(?<language>[a-z0-9]+)\}$/u
+const BRACED_LANGUAGE = /^\{(?<language>[a-z0-9]+)\}$/u
 
 const markdownIt = new MarkdownIt({ html: true, typographer: true })
 
 const defaultFence = markdownIt.renderer.rules.fence
 
-markdownIt.renderer.rules.fence = function (tokens, index, options, env, renderer) {
-  const token = tokens[index],
-    cell = CELL.exec(token.info.trim())
+function cellLanguageOf(token) {
+  const isFence = token.type == "fence"
 
-  if (!cell) {
-    return defaultFence(tokens, index, options, env, renderer)
+  if (!isFence) {
+    return null
   }
 
-  const language = cell.groups.language
+  const info = token.info.trim(),
+    braced = BRACED_LANGUAGE.exec(info)
 
-  token.info = language
-
-  const block = defaultFence(tokens, index, options, env, renderer)
-
-  return `<div class="cell" data-language="${language}">\n${block}</div>\n`
+  return braced ? braced.groups.language : null
 }
 
-export function renderMarkdown(text) {
-  return markdownIt.render(text)
+function unbraceAndCollect(tokens) {
+  const cells = new Set()
+
+  for (const token of tokens) {
+    const language = cellLanguageOf(token)
+
+    if (language) {
+      token.info = language
+      cells.add(token)
+    }
+  }
+
+  return cells
 }
+
+markdownIt.renderer.rules.fence = function (tokens, index, options, env, renderer) {
+  const token = tokens[index],
+    block = defaultFence(tokens, index, options, env, renderer),
+    isCell = env.cells.has(token)
+
+  if (!isCell) {
+    return block
+  }
+
+  return html` <colophon-cell language="${token.info}"> ${block} </colophon-cell> `
+}
+
+function renderMarkdown(text) {
+  const tokens = markdownIt.parse(text, {}),
+    cells = unbraceAndCollect(tokens)
+
+  return markdownIt.renderer.render(tokens, markdownIt.options, { cells })
+}
+
+export default renderMarkdown

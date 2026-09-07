@@ -5,11 +5,12 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "node --watch generator/serve.js",
+    "start": "vite",
+    "test": "vitest run",
     "prettier:check": "npx prettier . --check",
     "prettier:write": "npx prettier . --write",
-    "lint": "eslint 'generator/**/*.js' 'src/**/*.js' 'eslint.config.js'",
-    "check": "npm run prettier:check && npm run lint"
+    "lint": "eslint 'generator/**/*.js' 'src/**/*.js' 'vite.config.js' 'eslint.config.js'",
+    "check": "npm run prettier:check && npm run lint && npm test"
   },
   "author": "tulinmola",
   "license": "MIT",
@@ -21,7 +22,9 @@
     "@eslint/js": "^10.0.1",
     "eslint": "^10.8.1",
     "globals": "^17.11.0",
-    "prettier": "^3.9.6"
+    "prettier": "^3.9.6",
+    "vite": "^8.2.2",
+    "vitest": "^5.0.0"
   },
   "engines": {
     "node": ">=24"
