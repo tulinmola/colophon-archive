@@ -199,7 +199,7 @@ class Cell extends HTMLElement {
       inputs[id] = input.value
     }
 
-    const source = this.#working.textContent
+    const source = this.getAttribute("source")
 
     return execute(source, inputs)
   }

@@ -6,6 +6,11 @@
   --rule: light-dark(#e2e2d8, #2b2b33);
   --quoted: light-dark(#f4f4ee, #1d1d23);
   --wrong: light-dark(#a8331f, #f19c8b);
+  --code-comment: light-dark(#87877a, #767684);
+  --code-keyword: light-dark(#8a3f7a, #c692c0);
+  --code-string: light-dark(#3f6b4a, #8bb897);
+  --code-number: light-dark(#95571c, #d2a06a);
+  --code-name: light-dark(#33608a, #85b0d6);
 }
 
 body {
@@ -54,6 +59,37 @@ pre {
 
   & code {
     font-size: inherit;
+  }
+
+  & .hljs-comment,
+  & .hljs-quote {
+    color: var(--code-comment);
+    font-style: italic;
+  }
+
+  & .hljs-built_in,
+  & .hljs-keyword,
+  & .hljs-literal {
+    color: var(--code-keyword);
+  }
+
+  & .hljs-regexp,
+  & .hljs-string {
+    color: var(--code-string);
+  }
+
+  & .hljs-number {
+    color: var(--code-number);
+  }
+
+  & .hljs-attr,
+  & .hljs-property,
+  & .hljs-title {
+    color: var(--code-name);
+  }
+
+  & .hljs-subst {
+    color: var(--ink);
   }
 }
 

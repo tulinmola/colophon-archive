@@ -18,7 +18,7 @@ export function cell({ id = "", from = "", uses = "", source }) {
     given = uses ? ` uses="${uses}"` : "",
     written = escapeHtml(source)
 
-  return `<colophon-cell${named}${derived}${given}><pre><code>${written}</code></pre></colophon-cell>`
+  return `<colophon-cell${named}${derived}${given} source="${written}"><pre><code>${written}</code></pre></colophon-cell>`
 }
 
 export async function standUp(page, cells) {

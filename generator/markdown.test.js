@@ -33,6 +33,12 @@ describe("renderMarkdown", function () {
     expect(markup).toContain('<code class="language-js">return 1')
   })
 
+  it("carries the block itself, so what runs is not what is shown", function () {
+    const markup = fence("js cell", `return "<b>&</b>"`)
+
+    expect(markup).toContain('source="return &quot;&lt;b&gt;&amp;&lt;/b&gt;&quot;')
+  })
+
   it("escapes what an attribute carries", function () {
     const markup = fence('js cell id="a<b&c"')
 

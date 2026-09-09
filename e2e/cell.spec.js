@@ -109,13 +109,23 @@ test("derives again when asked again, and takes back what rested on it", async f
   await expect(page.locator("#resting")).toHaveAttribute("data-state", "unasked")
 })
 
-test("keeps the source it was given, whatever stands in it", async function ({ page }) {
+test("runs what it carries, not what it shows", async function ({ page }) {
+  const dressed = `<colophon-cell source="return 41 + 1"><pre><code>nothing like it</code></pre></colophon-cell>`
+
+  await standUp(page, [dressed])
+  await page.locator("[data-derive]").click()
+
+  await expect(page.locator("output")).toHaveText("42")
+})
+
+test("runs the source it was given, whatever stands in it", async function ({ page }) {
   const awkward = `return "<b>&</b>" + '</code>'`,
     cells = [cell({ source: awkward })]
 
   await standUp(page, cells)
+  await page.locator("[data-derive]").click()
 
-  await expect(page.locator("colophon-cell pre")).toHaveText(awkward)
+  await expect(page.locator("output")).toHaveText('"<b>&</b></code>"')
 })
 
 test("answers under the block of every cell it derived from, not only its own", async function ({

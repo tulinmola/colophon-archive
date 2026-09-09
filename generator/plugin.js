@@ -1,4 +1,5 @@
 import { findPages, pageAt, renderColophon } from "./site.js"
+import { join } from "node:path"
 import renderArchive from "./archive.js"
 
 const OUTSIDE_MODULE_GRAPH = /\.(?:md|css)$/u
@@ -13,8 +14,19 @@ function colophons(root) {
     name: "colophons",
 
     configureServer(server) {
+      const generator = join(root, "generator")
+
       server.watcher.on("change", function (path) {
-        if (OUTSIDE_MODULE_GRAPH.test(path)) {
+        // Vite loads the generator once, when the server starts.
+        const isGenerator = path.startsWith(generator)
+        if (isGenerator) {
+          server.restart()
+
+          return
+        }
+
+        const outside = OUTSIDE_MODULE_GRAPH.test(path)
+        if (outside) {
           server.ws.send({ type: "full-reload" })
         }
       })
