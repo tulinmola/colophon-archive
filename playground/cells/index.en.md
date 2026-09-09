@@ -9,63 +9,41 @@ Not a colophon. The place the apparatus is tried on things whose answers are alr
 
 An element holding one block of code. What it answers is what a reader came for; the working is folded away for whoever came to check.
 
-<colophon-cell>
-
-```js
+```js cell
 return 2 + 2
 ```
-
-</colophon-cell>
 
 ## Where it runs
 
 In the browser, when a reader asks. Nothing is executed while the page is built or served — this one answers `"object"` here and would answer `"undefined"` in Node.
 
-<colophon-cell>
-
-```js
+```js cell
 return typeof window
 ```
-
-</colophon-cell>
 
 ## What a cell derives from another
 
 A cell is named by its `id`, and one that rests on another says so with `from`. Nothing is shared between them: the value arrives bound to the name of the cell it came from, and to nothing else.
 
-<colophon-cell id="two">
-
-```js
+```js cell id="two"
 return 2
 ```
 
-</colophon-cell>
-
-<colophon-cell id="sum" from="two">
-
-```js
+```js cell id="sum" from="two"
 return two + 2
 ```
 
-</colophon-cell>
-
 Run the one below and the cells it derives from run too, in the open, each answering under its own block. A cell may derive only from one written above it.
 
-<colophon-cell id="product" from="two sum">
-
-```js
+```js cell from="two sum"
 return two * sum
 ```
-
-</colophon-cell>
 
 ## What the source says
 
 Whatever the prose around a cell cannot. A comment is read by whoever opened the working, which is where an account of the apparatus belongs rather than in the page.
 
-<colophon-cell>
-
-```js
+```js cell
 // A cell is a function body: it may declare, it may await, and it returns
 // what it found. How far that goes is JSON, and no further, for now.
 const doubled = [1, 2, 3].map(each => each * 2)
@@ -73,26 +51,16 @@ const doubled = [1, 2, 3].map(each => each * 2)
 return doubled
 ```
 
-</colophon-cell>
-
 ## When it fails
 
 The failure is the result.
 
-<colophon-cell id="broken">
-
-```js
+```js cell id="broken"
 return missing.value
 ```
 
-</colophon-cell>
-
 A cell deriving from one that failed says so, rather than running short of what it was promised.
 
-<colophon-cell from="broken">
-
-```js
+```js cell from="broken"
 return "never reached"
 ```
-
-</colophon-cell>

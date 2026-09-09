@@ -1,13 +1,47 @@
 import { describe, expect, it } from "vitest"
 import renderMarkdown from "./markdown.js"
 
-describe("renderMarkdown", function () {
-  it("passes an element through, because a cell is written as one", function () {
-    const markup = renderMarkdown(
-      '<colophon-cell id="sum">\n\n```js\nreturn 1\n```\n\n</colophon-cell>\n'
-    )
+const FENCE = "```"
 
-    expect(markup).toContain('<colophon-cell id="sum">')
+function fence(info, source = "return 1") {
+  return renderMarkdown(`${FENCE}${info}\n${source}\n${FENCE}\n`)
+}
+
+describe("renderMarkdown", function () {
+  it("makes an element of a block the info string marks as a cell", function () {
+    const markup = fence("js cell")
+
+    expect(markup).toContain("<colophon-cell>")
+    expect(markup).toContain("</colophon-cell>")
+  })
+
+  it("leaves a block that is not marked as it found it", function () {
+    const markup = fence("js")
+
+    expect(markup).not.toContain("colophon-cell")
+  })
+
+  it("carries what the info string wrote onto the element", function () {
+    const markup = fence('js cell id="sum" from="two" uses="cpc"')
+
+    expect(markup).toContain('<colophon-cell id="sum" from="two" uses="cpc">')
+  })
+
+  it("keeps the language first, so a reader with no archive still sees JavaScript", function () {
+    const markup = fence('js cell id="sum"')
+
     expect(markup).toContain('<code class="language-js">return 1')
+  })
+
+  it("escapes what an attribute carries", function () {
+    const markup = fence('js cell id="a<b&c"')
+
+    expect(markup).toContain('<colophon-cell id="a&lt;b&amp;c">')
+  })
+
+  it("does not take a word inside an attribute for a marking", function () {
+    const markup = fence('js id="a cell b"')
+
+    expect(markup).not.toContain("colophon-cell")
   })
 })

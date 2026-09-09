@@ -20,8 +20,7 @@ A published page reads with no execution at all: the statics are the publication
 - A snapshot is not a witness. The witness is the released work, named by its hash; a snapshot hangs from it as an artifact.
 - Measurements are ours. Screenshots and short extracts are quotation. Snapshots, disc images and complete listings are never published.
 - An artifact lives in the colophon that cites it, never in a shared library.
-- A cell is an element an author writes, holding one block of code. Attributes carry machine values — `id`, and `from` for what it derives from; prose belongs in the markdown around it and never in an attribute.
-- A cell needs a blank line after its opening tag and before its closing one, or markdown takes the fence for part of the HTML block and the cell is left with no source.
+- A cell is a fenced block an author marks, holding one block of code. The language comes first in the info string, so a reader with no archive still sees JavaScript, then `cell`, then the machine values — `id` for what may derive from it, `from` for what it derives from, `uses` for what it stands up; prose belongs in the markdown around it and never in an attribute.
 - A cell derives what it needs, and every cell it reaches answers under its own block, so nothing runs unseen.
 
 ## Code
