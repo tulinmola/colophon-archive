@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test"
 const SNAPSHOT = "/playground/abduction/abduction.sna"
 
 async function pictureIn(page, id) {
-  await page.locator(`#${id} button`).click()
+  await page.locator(`#${id} [data-derive]`).click()
 
   const picture = page.locator(`#${id} output img`)
 
@@ -88,7 +88,7 @@ test("refuses a picture of a tube that was never plugged in", async function ({ 
 return machine.monitor()`
 
   await standUp(page, [cell({ id: "unplugged", uses: "cpc", source })])
-  await page.locator("#unplugged button").click()
+  await page.locator("#unplugged [data-derive]").click()
 
   await expect(page.locator("#unplugged output")).toHaveText(/no monitor plugged in/u)
 })
