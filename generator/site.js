@@ -21,9 +21,9 @@ function directoryOf(path) {
 }
 
 function findPages(root) {
-  const pages = join(root, PAGES),
-    names = readdirSync(pages, { recursive: true }),
-    found = []
+  const directory = join(root, PAGES),
+    names = readdirSync(directory, { recursive: true }),
+    pages = []
 
   names.sort()
 
@@ -35,11 +35,11 @@ function findPages(root) {
       continue
     }
 
-    const file = join(pages, name),
+    const file = join(directory, name),
       colophon = readColophon(file),
       within = directoryOf(relativePath)
 
-    found.push({
+    pages.push({
       description: colophon.description,
       file,
       path: `${PAGES}/${within}`,
@@ -47,7 +47,7 @@ function findPages(root) {
     })
   }
 
-  return found
+  return pages
 }
 
 function pageAt(pages, path) {

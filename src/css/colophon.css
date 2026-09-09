@@ -145,6 +145,12 @@ output {
     color: light-dark(#a8331f, #f19c8b);
   }
 
+  & img {
+    display: block;
+    image-rendering: pixelated;
+    max-width: 100%;
+  }
+
   &.pending {
     color: var(--faint);
     font-style: italic;

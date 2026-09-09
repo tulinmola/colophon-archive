@@ -1,7 +1,18 @@
+import MACHINES from "./machines.js"
 import execute from "./executor.js"
 import html from "./html.js"
 
-function shownValue(value) {
+function pictureFrom({ image, width, height }) {
+  const picture = document.createElement("img")
+
+  picture.src = image
+  picture.width = width
+  picture.height = height
+
+  return picture
+}
+
+function textFrom(value) {
   const asJson = JSON.stringify(value, null, 2),
     isRepresentable = asJson != null
 
@@ -42,7 +53,7 @@ class Cell extends HTMLElement {
 
     this.#button.addEventListener("click", this.run.bind(this), { signal })
 
-    this.#showWhatIsKnown()
+    this.#showAgain()
   }
 
   disconnectedCallback() {
@@ -61,7 +72,7 @@ class Cell extends HTMLElement {
     return above.find(cell => cell.id == id)
   }
 
-  async #showWhatIsKnown() {
+  async #showAgain() {
     const derived = this.#result
     if (!derived) {
       return
@@ -88,11 +99,18 @@ class Cell extends HTMLElement {
   }
 
   async #derive() {
-    const from = this.getAttribute("from"),
-      ids = from ? from.trim().split(/\s+/u) : [],
-      inputs = {}
+    const inputs = {}
 
-    for (const id of ids) {
+    for (const name of this.#namesIn("uses")) {
+      const machine = MACHINES[name]
+      if (!machine) {
+        return { error: `uses ${name}, which is no machine the archive stands up` }
+      }
+
+      inputs[name] = machine
+    }
+
+    for (const id of this.#namesIn("from")) {
       const cell = this.#above(id)
       if (!cell) {
         return { error: `derives from ${id}, which no cell above it is` }
@@ -112,10 +130,24 @@ class Cell extends HTMLElement {
     return execute(source, inputs)
   }
 
-  #show(result) {
-    const failed = result.error != null
+  #namesIn(attribute) {
+    const named = this.getAttribute(attribute)
 
-    this.#output.textContent = failed ? result.error : shownValue(result.value)
+    return named ? named.trim().split(/\s+/u) : []
+  }
+
+  #show(result) {
+    const failed = result.error != null,
+      image = result.value?.image
+
+    if (image) {
+      const picture = pictureFrom(result.value)
+
+      this.#output.replaceChildren(picture)
+    } else {
+      this.#output.textContent = failed ? result.error : textFrom(result.value)
+    }
+
     this.#output.classList.toggle("failed", failed)
     this.#output.classList.remove("pending")
   }

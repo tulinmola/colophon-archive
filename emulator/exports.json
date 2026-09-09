@@ -1,0 +1,21 @@
+[
+  "_archive_boot_cpc",
+  "_archive_connect_monitor",
+  "_archive_cpc_ink",
+  "_archive_cpc_video_characters",
+  "_archive_cpc_video_mode",
+  "_archive_cpc_video_rasters",
+  "_archive_cpc_video_rows",
+  "_archive_cpc_video_start",
+  "_archive_load_snapshot",
+  "_archive_monitor",
+  "_archive_monitor_height",
+  "_archive_monitor_width",
+  "_archive_problem",
+  "_archive_ram",
+  "_archive_ram_capacity",
+  "_archive_rgb",
+  "_archive_run_frames",
+  "_archive_snapshot",
+  "_archive_snapshot_capacity"
+]

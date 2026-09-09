@@ -6,11 +6,12 @@
   "private": true,
   "scripts": {
     "start": "vite",
+    "emulator:build": "node tools/build_emulator.js",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "prettier:check": "npx prettier . --check",
     "prettier:write": "npx prettier . --write",
-    "lint": "eslint 'generator/**/*.js' 'src/**/*.js' 'e2e/**/*.js' 'vite.config.js' 'playwright.config.js' 'eslint.config.js'",
+    "lint": "eslint 'generator/**/*.js' 'src/**/*.js' 'e2e/**/*.js' 'tools/**/*.js' 'vite.config.js' 'playwright.config.js' 'eslint.config.js' 'vitest.config.js'",
     "check": "npm run prettier:check && npm run lint && npm test"
   },
   "author": "tulinmola",
