@@ -85,6 +85,7 @@ async function cpc({ model = 6128, snapshot, monitor: connected = false }) {
 
   return {
     ram: machine.ram,
+    rgb: machine.rgb,
     runFrames: machine.runFrames,
     call: function (address, options) {
       const { interrupts = true, withinFrames = 1, ...wanted } = options ?? {}

@@ -1,11 +1,23 @@
 ---
-title: Abduction – The screens
-description: The Abduction screen geometries
+title: The Abduction of Oscar Z
+description: A 2020 homebrew CPC platformer by Dreamin'bits, and winner of the #CPCRetroDev contest: you chase aliens across three scrolling levels to rescue Oscar's kidnapped farm animals.
 ---
 
-The menu, as a player meets it. It looks like one screen; it is two.
+## Description
 
-```js cell uses="cpc"
+The Abduction of Oscar Z is a homebrew Amstrad CPC platformer by Dreamin'bits (2020), and the winner of that year's #CPCRetroDev Game Creation Contest; it runs on a 64K CPC.
+
+Young Oscar and three of his farm animals, including his dog Gunter, are abducted by a UFO and taken to an alien planet.
+
+It's a fast right-scrolling run-and-jump game: you jump, slide under hovering aliens, and can burn energy for a speed boost, with a progress map showing how close you are to the boss alien. Across three levels, you must catch the alien before he reaches one of your animals, then knock him off his spacecraft and take it; fail and you replay the level.
+
+Reviewers praise its colourful graphics, smooth animation and animated intro.
+
+## The main menu
+
+The main menu, as a player meets it.
+
+```js cell uses="cpc" caption="The main menu"
 const machine = await cpc({ model: 6128, snapshot: "abduction.sna", monitor: true })
 
 machine.runFrames(200)
@@ -13,9 +25,13 @@ machine.runFrames(200)
 return machine.monitor()
 ```
 
-The top forty lines are a screen of their own at &8000 — fifty characters across, twenty rows of two rasters — the band the game keeps for its status line, holding the title while the menu is up.
+Every edge of that picture is filled, looking like a full overscan screen. But an overscan screen should take 32 kilobytes, and this game works on a 64 kylobytes CPC. Half of the whole RAM'd be used… just for the screen memory!
 
-```js cell uses="cpc"
+It does not pay that. What looks like one picture is the game's own engine running **two screens**, one standing above the other, with a background colour chosen well enough to hide the seam. Look closely and you can find it.
+
+The top forty lines are a screen of their own at `&8000`, four kilobytes of memory. In play this is where the HUD sits.
+
+```js cell uses="cpc" caption="The HUD screen"
 const machine = await cpc({ model: 6128, snapshot: "abduction.sna" })
 
 machine.runFrames(160)
@@ -23,9 +39,9 @@ machine.runFrames(160)
 return machine.video()
 ```
 
-The rest is the other screen, at &C000: fifty-one characters across, twenty rows of eight rasters, a hundred and sixty lines. Forty and a hundred and sixty make the two hundred of a whole screen, and the CRTC is turned from one to the other partway down every frame. What it holds when a frame ends is the band above, which is why this screen's counts are written out and the other's are not.
+The rest is the other screen, at `&C000`: a hundred and sixty lines and sixteen kilobytes of it, wider than the monitor ever shows. This is the game's screen proper.
 
-```js cell uses="cpc"
+```js cell uses="cpc" caption="The game screen"
 const machine = await cpc({ model: 6128, snapshot: "abduction.sna" }),
   inks = [
     0x14, 0x14, 0x04, 0x0e, 0x18, 0x0c, 0x0d, 0x16, 0x00, 0x15, 0x07, 0x0f, 0x13, 0x1a, 0x0a, 0x0b
@@ -34,4 +50,204 @@ const machine = await cpc({ model: 6128, snapshot: "abduction.sna" }),
 machine.runFrames(149)
 
 return machine.video({ start: 0xc000, characters: 51, rows: 20, rasters: 8, mode: 0, inks })
+```
+
+Everything left over is border, which costs nothing at all. Four kilobytes and sixteen: twenty, for a screen that looks like thirty-two.
+
+## The palette and its fades
+
+The game's sixteen colours, and the steps it walks to reach them. Nothing here ever cuts: every change of scene climbs these eight rows up out of black, or goes back down them into it. The bottom row is the palette itself, and only one colour in it belongs to wherever you happen to be: the sky, that changes depending on the level being shown.
+
+```js cell id="palette" uses="cpc" caption="The palette and its faders"
+const alias = { palettes: 0x3f80 }
+
+const PALETTE_SIZE = 16,
+  FADES = 8,
+  SWATCH = 24,
+  GAP = 2,
+  HALF_GAP = GAP / 2
+
+const machine = await cpc({ model: 6128, snapshot: "abduction.sna" })
+
+// The load arrives compressed, and the game unpacks it as it runs.
+machine.runFrames(160)
+
+// interrupts_startFadeIn walks up these eight and interrupts_startFadeOut
+// walks back down, a palette to a frame. renderer_setBackgroundInks writes pen
+// zero of each from the standing level's own list.
+const canvas = document.createElement("canvas")
+
+canvas.width = PALETTE_SIZE * (SWATCH + GAP)
+canvas.height = FADES * (SWATCH + GAP)
+
+const context = canvas.getContext("2d")
+
+for (let fade = 0; fade < FADES; fade++) {
+  for (let pen = 0; pen < PALETTE_SIZE; pen++) {
+    const code = machine.ram[alias.palettes + fade * PALETTE_SIZE + pen],
+      colour = machine.rgb(code)
+
+    context.fillStyle = `#${colour.toString(16).padStart(6, "0")}`
+    context.fillRect(
+      HALF_GAP + pen * (SWATCH + GAP),
+      HALF_GAP + fade * (SWATCH + GAP),
+      SWATCH,
+      SWATCH
+    )
+  }
+}
+
+const faded = alias.palettes + (FADES - 1) * PALETTE_SIZE,
+  inks = [...machine.ram.slice(faded, faded + PALETTE_SIZE)]
+
+return { image: canvas.toDataURL("image/png"), inks }
+```
+
+## The levels
+
+Three levels, and an animal to rescue in each one.
+
+```js cell id="levels" from="palette" uses="cpc"
+const alias = {
+  game_levels: 0x0467,
+  renderer_getScreenPointer_asm: 0x1672,
+  terrain_clear: 0x147a,
+  terrain_step: 0x14e2,
+  renderer_drawStain_asm: 0x1839,
+  water_clear: 0x1a47,
+  water_step: 0x1a89,
+  renderer_newSpansStain: 0x2582,
+  renderer_clear_asm: 0x25f1,
+  renderer_move: 0x2836,
+  platform_clear: 0x2992,
+  platform_step: 0x29ca,
+  background_clear: 0x2b13,
+  background_step: 0x2b28
+}
+
+const LEVEL_SIZE = 32,
+  LEVEL_BACKGROUND_INKS = 2,
+  LEVEL_NAME = 6,
+  LEVEL_ENDING = 26,
+  LEVELS = 3,
+  FADES = 8,
+  SCREEN_WIDTH_IN_BYTES = 102,
+  SCREENS_TO_A_BAND = 8
+
+function wordIn(ram, at) {
+  return ram[at] | (ram[at + 1] << 8)
+}
+
+function nameIn(ram, at) {
+  const letters = []
+
+  for (let step = 0; ram[at + step] != 0; step++) {
+    letters.push(String.fromCharCode(ram[at + step]))
+  }
+
+  return letters.join("")
+}
+
+const draw = async function (index) {
+  const machine = await cpc({ model: 6128, snapshot: "abduction.sna" }),
+    level = alias.game_levels + index * LEVEL_SIZE,
+    terms = { interrupts: false, withinFrames: 30 }
+
+  // The load arrives compressed, and the game unpacks it as it runs.
+  machine.runFrames(160)
+
+  // game_start's own clears, less the ones a drawing does not need.
+  machine.call(alias.renderer_clear_asm, { ix: level, hl: 0, ...terms })
+  machine.call(alias.terrain_clear, { hl: level, ...terms })
+  machine.call(alias.platform_clear, { hl: level, ...terms })
+  machine.call(alias.water_clear, { hl: level, ...terms })
+  machine.call(alias.background_clear, terms)
+
+  const inks = [...palette.inks],
+    skies = wordIn(machine.ram, level + LEVEL_BACKGROUND_INKS)
+
+  // The last of the level's eight, the fade being over.
+  inks[0] = machine.ram[skies + FADES - 1]
+
+  // success_step watches for this position to pass renderer_left.
+  const ending = wordIn(machine.ram, level + LEVEL_ENDING),
+    screens = Math.ceil(ending / SCREEN_WIDTH_IN_BYTES),
+    bands = Math.ceil(screens / SCREENS_TO_A_BAND)
+
+  const canvas = document.createElement("canvas")
+
+  canvas.width = SCREENS_TO_A_BAND * SCREEN_WIDTH_IN_BYTES * 4
+  canvas.height = bands * 160
+
+  const context = canvas.getContext("2d")
+
+  for (let screen = 0; screen < screens; screen++) {
+    if (screen > 0) {
+      machine.call(alias.renderer_move, { l: SCREEN_WIDTH_IN_BYTES, ...terms })
+    }
+
+    // game_step's own order.
+    machine.call(alias.water_step, terms)
+    machine.call(alias.terrain_step, terms)
+    machine.call(alias.background_step, terms)
+    machine.call(alias.platform_step, terms)
+
+    machine.call(alias.renderer_drawStain_asm, { ix: alias.renderer_newSpansStain, ...terms })
+
+    const left = screen * SCREEN_WIDTH_IN_BYTES,
+      answer = machine.call(alias.renderer_getScreenPointer_asm, { de: left, b: 0, ...terms }),
+      reading = machine.video({
+        start: answer.hl,
+        characters: 51,
+        rows: 20,
+        rasters: 8,
+        mode: 0,
+        inks
+      }),
+      picture = new Image()
+
+    picture.src = reading.image
+    await picture.decode()
+
+    const band = Math.floor(screen / SCREENS_TO_A_BAND),
+      along = screen % SCREENS_TO_A_BAND
+
+    context.drawImage(picture, along * picture.naturalWidth, band * picture.naturalHeight)
+  }
+
+  return { image: canvas.toDataURL("image/png") }
+}
+
+const machine = await cpc({ model: 6128, snapshot: "abduction.sna" })
+
+machine.runFrames(160)
+
+const names = []
+
+for (let index = 0; index < LEVELS; index++) {
+  const level = alias.game_levels + index * LEVEL_SIZE,
+    named = wordIn(machine.ram, level + LEVEL_NAME)
+
+  names.push(nameIn(machine.ram, named))
+}
+
+return { names, draw }
+```
+
+The shortest of the three and the kindest: birds, mines, platforms, and water not to be touched. Mizzie the sheep is waiting at the end.
+
+```js cell from="levels" caption="Mizzie's level, whole"
+return levels.draw(0)
+```
+
+The second brings new enemies: big birds with a weird way of spelling, and slugs. Donald the duck is waiting at the end of this one.
+
+```js cell from="levels" caption="Donald's level, whole"
+return levels.draw(1)
+```
+
+The last is the longest and the hardest, and your loyal friend Gunter is at the end of it.
+
+```js cell from="levels" caption="Gunter's level, whole"
+return levels.draw(2)
 ```

@@ -1,23 +1,18 @@
 import colourFrom from "./colours.js"
 
-// The window the emulator crops its own screenshots to, which is what lets a
-// picture taken here and a screenshot taken there be compared sample for
-// sample: PICTURE in colophon-player's src/js/emulator/cpc.js. The raster
-// around it is border the tube overscans, sync and blanking.
+// PICTURE in colophon-player's src/js/emulator/cpc.js: the window the emulator
+// crops its own screenshots to.
 const LEFT = 208,
   TOP = 34,
   SAMPLES = 768,
   HEIGHT = 272
 
-// Sixteen samples to the microsecond make a sample half a pixel wide, which is
-// what brings the window back to four by three, and is why the same pair holds
-// one pixel in every mode the Gate Array widens: PICTURE in colophon-player's
-// src/js/emulator/cpc.js.
+// PICTURE in colophon-player's src/js/emulator/cpc.js: a sample is half a
+// pixel wide.
 const SAMPLES_PER_PIXEL = 2,
   WIDTH = SAMPLES / SAMPLES_PER_PIXEL
 
-// Every value the Gate Array can put on the cable, which is the five bits the
-// INKR command keeps: gate_array_rgb in the emulator's gate_array.c.
+// gate_array_rgb in the emulator's gate_array.c: the five bits INKR keeps.
 const COLOUR_CODES = 32
 
 function cpcMonitorFrom(framebuffer, { raster, rgb }) {

@@ -1,18 +1,13 @@
 import colourFrom from "./colours.js"
 
-// The Gate Array puts sixteen samples on the cable for each character the
-// CRTC counts out, and a character is two bytes; a mode decides how many of
-// those sixteen a pixel keeps, never how many there are. See "The Gate Array"
-// (https://www.grimware.org/doku.php/documentations/devices/gatearray) and
-// GATE_ARRAY_SAMPLES_PER_CHARACTER in the emulator's gate_array.h.
+// GATE_ARRAY_SAMPLES_PER_CHARACTER in the emulator's gate_array.h, after "The
+// Gate Array" (https://www.grimware.org/doku.php/documentations/devices/gatearray):
+// sixteen samples to a character, and two bytes to a character.
 const SAMPLES_PER_BYTE = 8,
   BYTES_PER_CHARACTER = 2
 
-// Sixteen samples to the microsecond make a sample half a pixel wide, which is
-// what brings a picture back to four by three: PICTURE in colophon-player's
-// src/js/emulator/cpc.js. So a byte is four pixels across however the mode
-// divides them, and the firmware's eighty bytes are the three hundred and
-// twenty of mode 1.
+// PICTURE in colophon-player's src/js/emulator/cpc.js: a sample is half a
+// pixel wide, which is what brings a picture back to four by three.
 const SAMPLES_PER_PIXEL = 2,
   PIXELS_PER_BYTE = SAMPLES_PER_BYTE / SAMPLES_PER_PIXEL
 
@@ -35,11 +30,9 @@ function mode1Pens(byte) {
 
 const MODES = { 0: mode0Pens, 1: mode1Pens }
 
-// The board's video address wiring, cpc_video_address in the emulator's
-// cpc.c, after Kevin Thacker's "Screen memory addressess"
-// (https://cpctech.cpcwiki.de/docs/scraddr.html): MA9..MA0 land on A10..A1,
-// RA on A13..A11 and MA13..MA12 on A15..A14. The counter is fourteen bits,
-// which is what makes a hardware-scrolled screen come round on itself.
+// cpc_video_address in the emulator's cpc.c, after Kevin Thacker's "Screen
+// memory addressess" (https://cpctech.cpcwiki.de/docs/scraddr.html): MA9..MA0
+// land on A10..A1, RA on A13..A11, MA13..MA12 on A15..A14, fourteen bits.
 const MA_BITS = 0x3fff
 
 function addressesFrom({ start, width, height, rasters }) {
@@ -82,7 +75,7 @@ function cpcVideoFrom(ram, { start, characters, rows, rasters, mode, inks, rgb }
 
   const width = characters * BYTES_PER_CHARACTER,
     height = rows * rasters,
-    colours = inks.map(code => colourFrom(rgb, code)),
+    colours = Array.from(inks, code => colourFrom(rgb, code)),
     addresses = addressesFrom({ start, width, height, rasters }),
     pixelsPerLine = width * PIXELS_PER_BYTE,
     pixels = new Uint8ClampedArray(pixelsPerLine * height * 4)
@@ -90,7 +83,7 @@ function cpcVideoFrom(ram, { start, characters, rows, rasters, mode, inks, rgb }
   for (let index = 0; index < addresses.length; index++) {
     const byte = ram[addresses[index]],
       pens = pensOf(byte),
-      across = PIXELS_PER_BYTE / pens.length,
+      pixelsPerPen = PIXELS_PER_BYTE / pens.length,
       line = Math.floor(index / width),
       column = index % width,
       top = line * pixelsPerLine * 4
@@ -98,8 +91,8 @@ function cpcVideoFrom(ram, { start, characters, rows, rasters, mode, inks, rgb }
     for (let pixel = 0; pixel < pens.length; pixel++) {
       const [red, green, blue] = colours[pens[pixel]]
 
-      for (let step = 0; step < across; step++) {
-        const at = top + (column * PIXELS_PER_BYTE + pixel * across + step) * 4
+      for (let step = 0; step < pixelsPerPen; step++) {
+        const at = top + (column * PIXELS_PER_BYTE + pixel * pixelsPerPen + step) * 4
 
         pixels[at] = red
         pixels[at + 1] = green

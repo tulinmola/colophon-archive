@@ -222,7 +222,7 @@ test("refuses a machine the archive does not stand up", async function ({ page }
 
 test("shows a result that carries an image as a picture", async function ({ page }) {
   const pixel = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-    source = `return { image: "${pixel}", width: 4, height: 2 }`,
+    source = `return { image: "${pixel}" }`,
     cells = [cell({ source })]
 
   await standUp(page, cells)
@@ -231,7 +231,18 @@ test("shows a result that carries an image as a picture", async function ({ page
   const picture = page.locator("output img")
 
   await expect(picture).toHaveAttribute("src", pixel)
-  await expect(picture).toHaveAttribute("width", "4")
+})
+
+test("puts the words a cell was given under what it found", async function ({ page }) {
+  const pixel = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+    source = `return { image: "${pixel}" }`,
+    written = cell({ source }).replace("<colophon-cell", `<colophon-cell caption="What it found"`)
+
+  await standUp(page, [written])
+  await page.locator("[data-derive]").click()
+
+  await expect(page.locator("output figcaption")).toHaveText("What it found")
+  await expect(page.locator("output img")).toHaveAttribute("alt", "")
 })
 
 test("a cell written in a colophon becomes one on the page", async function ({ page }) {

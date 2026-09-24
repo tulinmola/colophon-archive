@@ -20,7 +20,7 @@ A published page reads with no execution at all: the statics are the publication
 - A snapshot is not a witness. The witness is the released work, named by its hash; a snapshot hangs from it as an artifact.
 - Measurements are ours. Screenshots and short extracts are quotation. Snapshots, disc images and complete listings are never published.
 - An artifact lives in the colophon that cites it, never in a shared library.
-- A cell is a fenced block an author marks, holding one block of code. The language comes first in the info string, so a reader with no archive still sees JavaScript, then `cell`, then the machine values — `id` for what may derive from it, `from` for what it derives from, `uses` for what it stands up. The generator carries the block itself in `source`, which is what runs, so the `<pre>` is free to be dressed; prose belongs in the markdown around it and never in an attribute.
+- A cell is a fenced block an author marks, holding one block of code. The language comes first in the info string, so a reader with no archive still sees JavaScript, then `cell`, then what the author declares about it — `id` for what may derive from it, `from` for what it derives from, `uses` for what it stands up, `caption` for the words that belong under what it found. Attributes carry the author's declarations and the result carries the machine's finding, which is why a caption is an attribute and never a returned value: a record holds the picture, not the sentence about it. The generator carries the block itself in `source`, which is what runs, so the `<pre>` is free to be dressed; prose longer than a caption belongs in the markdown around the cell.
 - A cell derives what it needs, and every cell it reaches answers under its own block, so nothing runs unseen.
 
 ## Code
@@ -42,6 +42,7 @@ A published page reads with no execution at all: the statics are the publication
 - A scribe's register: plain, declarative, a little antique. Take the metaphor seriously and never wink at it.
 - Mood at the openings, discipline in the middles.
 - Prose earns its place. Minimum, load-bearing only — an explanation nobody needs is a dev log with a date on it.
+- Counts are words and measures are figures: forty lines, eight rows, three levels, against 4KB, 32KB, `&C000`. A machine's sizes are what it is called, not how much of something there is.
 - One paragraph, one line. Markdown is never hard-wrapped.
 - Write for 2036.
 

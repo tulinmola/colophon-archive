@@ -9,9 +9,7 @@ function imageFrom({ pixels, width, height }) {
 
   context.putImageData(data, 0, 0)
 
-  const image = canvas.toDataURL("image/png")
-
-  return { image, width, height }
+  return { image: canvas.toDataURL("image/png") }
 }
 
 export default imageFrom

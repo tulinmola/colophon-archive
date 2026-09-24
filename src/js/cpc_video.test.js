@@ -86,6 +86,20 @@ describe("cpcVideoFrom", function () {
     expect(strip.height).toBe(40)
   })
 
+  it("takes its inks as the machine keeps them, which is bytes", function () {
+    const screen = cpcVideoFrom(new Uint8Array(0x4000), {
+      start: 0,
+      characters: 40,
+      rows: 25,
+      rasters: 8,
+      mode: 0,
+      inks: Uint8Array.from(INKS),
+      rgb: pen => pen
+    })
+
+    expect(screen.width).toBe(320)
+  })
+
   it("refuses a reading it was not told the counts for", function () {
     const ram = new Uint8Array(0x4000)
 

@@ -22,14 +22,26 @@ const WORKING = html`<svg viewBox="0 0 16 16" aria-hidden="true">
 
 const UNASKED = "not yet derived"
 
-function pictureFrom({ image, width, height }) {
+function pictureFrom(image) {
   const picture = document.createElement("img")
 
   picture.src = image
-  picture.width = width
-  picture.height = height
+  picture.alt = ""
 
   return picture
+}
+
+// A caption names the picture, so the picture is left unnamed: the two
+// together would be read out twice.
+// https://www.w3.org/WAI/tutorials/images/groups/
+function captionedBy(picture, text) {
+  const figure = document.createElement("figure"),
+    caption = document.createElement("figcaption")
+
+  caption.textContent = text
+  figure.append(picture, caption)
+
+  return figure
 }
 
 function textFrom(value) {
@@ -215,9 +227,11 @@ class Cell extends HTMLElement {
       image = result.value?.image
 
     if (image) {
-      const picture = pictureFrom(result.value)
+      const caption = this.getAttribute("caption"),
+        picture = pictureFrom(image),
+        shown = caption ? captionedBy(picture, caption) : picture
 
-      this.#output.replaceChildren(picture)
+      this.#output.replaceChildren(shown)
     } else {
       this.#output.textContent = failed ? result.error : textFrom(result.value)
     }
