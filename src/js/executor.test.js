@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import execute from "./executor.js"
+import execute from "./executor"
 
 describe("execute, which runs where there is no document at all", function () {
   it("answers with what the cell returned", async function () {

@@ -1,4 +1,4 @@
-import { cell, standUp } from "./fixture.js"
+import { cell, standUp } from "./fixture"
 import { expect, test } from "@playwright/test"
 
 test("waits with its code folded until a reader asks", async function ({ page }) {

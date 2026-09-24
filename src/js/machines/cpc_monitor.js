@@ -1,4 +1,4 @@
-import colourFrom from "./colours.js"
+import colourFrom from "./colours"
 
 // PICTURE in colophon-player's src/js/emulator/cpc.js: the window the emulator
 // crops its own screenshots to.

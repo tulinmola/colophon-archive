@@ -1,4 +1,4 @@
-import { escapeHtml } from "../generator/html.js"
+import { escapeHtml } from "../generator/html"
 
 const DOCUMENT = `<!doctype html>
 <html lang="en">
@@ -12,7 +12,7 @@ const DOCUMENT = `<!doctype html>
   </body>
 </html>`
 
-export function cell({ id = "", from = "", uses = "", source }) {
+function cell({ id = "", from = "", uses = "", source }) {
   const named = id ? ` id="${id}"` : "",
     derived = from ? ` from="${from}"` : "",
     given = uses ? ` uses="${uses}"` : "",
@@ -21,7 +21,7 @@ export function cell({ id = "", from = "", uses = "", source }) {
   return `<colophon-cell${named}${derived}${given} source="${written}"><pre><code>${written}</code></pre></colophon-cell>`
 }
 
-export async function standUp(page, cells) {
+async function standUp(page, cells) {
   const written = cells.join("\n"),
     document = DOCUMENT.replace("<main></main>", `<main>${written}</main>`)
 
@@ -31,3 +31,5 @@ export async function standUp(page, cells) {
 
   await page.goto("/under-test")
 }
+
+export { cell, standUp }

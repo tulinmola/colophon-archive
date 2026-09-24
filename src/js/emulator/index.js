@@ -1,4 +1,4 @@
-import loadEmulator from "./module.js"
+import loadEmulator from "./module"
 
 // As archive.c counts them.
 const ARCHIVE_REGISTERS = 12

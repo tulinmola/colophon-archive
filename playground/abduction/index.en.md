@@ -9,7 +9,7 @@ The Abduction of Oscar Z is a homebrew Amstrad CPC platformer by Dreamin'bits (2
 
 Young Oscar and three of his farm animals, including his dog Gunter, are abducted by a UFO and taken to an alien planet.
 
-It's a fast right-scrolling run-and-jump game: you jump, slide under hovering aliens, and can burn energy for a speed boost, with a progress map showing how close you are to the boss alien. Across three levels, you must catch the alien before he reaches one of your animals, then knock him off his spacecraft and take it; fail and you replay the level.
+It's a fast right-scrolling run-and-jump game: you jump, slide under hovering aliens and burn energy for a speed boost, with a progress map showing how close you are to the boss alien. Across three levels, you must catch the alien before he reaches one of your animals, then knock him off his spacecraft and take it; fail and you replay the level.
 
 Reviewers praise its colourful graphics, smooth animation and animated intro.
 
@@ -25,11 +25,11 @@ machine.runFrames(200)
 return machine.monitor()
 ```
 
-Every edge of that picture is filled, looking like a full overscan screen. But an overscan screen should take 32 kilobytes, and this game works on a 64 kylobytes CPC. Half of the whole RAM'd be used… just for the screen memory!
+Every edge of that picture is filled, looking like a full overscan screen. But an overscan screen should take 32K, and this game works on a 64K CPC. Half the whole RAM would go just to screen memory!
 
 It does not pay that. What looks like one picture is the game's own engine running **two screens**, one standing above the other, with a background colour chosen well enough to hide the seam. Look closely and you can find it.
 
-The top forty lines are a screen of their own at `&8000`, four kilobytes of memory. In play this is where the HUD sits.
+The top 40 lines are a screen of their own at `&8000`, 4K of memory. In play this is where the HUD sits.
 
 ```js cell uses="cpc" caption="The HUD screen"
 const machine = await cpc({ model: 6128, snapshot: "abduction.sna" })
@@ -39,7 +39,7 @@ machine.runFrames(160)
 return machine.video()
 ```
 
-The rest is the other screen, at `&C000`: a hundred and sixty lines and sixteen kilobytes of it, wider than the monitor ever shows. This is the game's screen proper.
+The rest is the other screen, at `&C000`: 160 lines and 16K of it, wider than the monitor ever shows. This is the game's screen proper.
 
 ```js cell uses="cpc" caption="The game screen"
 const machine = await cpc({ model: 6128, snapshot: "abduction.sna" }),
@@ -52,11 +52,13 @@ machine.runFrames(149)
 return machine.video({ start: 0xc000, characters: 51, rows: 20, rasters: 8, mode: 0, inks })
 ```
 
-Everything left over is border, which costs nothing at all. Four kilobytes and sixteen: twenty, for a screen that looks like thirty-two.
+But why wider than the monitor shows? It is a classic trick for not cropping sprites at the edges. If nobody can see what is out there, a sprite leaving one side never has to be stopped from coming back, broken, on the other. Cropping is expensive: it means a second set of drawing routines. Abduction's are built for fast span drawing on a hardware-scrolled screen, and having to draw only part of a sprite would break those optimisations.
+
+Everything left over is border, which costs nothing at all. 4 + 16 = 20K, for a screen that looks like 32!
 
 ## The palette and its fades
 
-The game's sixteen colours, and the steps it walks to reach them. Nothing here ever cuts: every change of scene climbs these eight rows up out of black, or goes back down them into it. The bottom row is the palette itself, and only one colour in it belongs to wherever you happen to be: the sky, that changes depending on the level being shown.
+The game's 16 colours, like any other CPC mode 0 game. But moving from one section to the next, it fades the screen out and back in. To make that fade beautiful there are 8 hand-crafted palettes, running from pitch black up to the full thing.
 
 ```js cell id="palette" uses="cpc" caption="The palette and its faders"
 const alias = { palettes: 0x3f80 }
@@ -103,9 +105,11 @@ const faded = alias.palettes + (FADES - 1) * PALETTE_SIZE,
 return { image: canvas.toDataURL("image/png"), inks }
 ```
 
+The leftmost colour is the background. It changes with the level, taking its column from one of the others: black in the menu, blue for the first and second levels, purple for the last.
+
 ## The levels
 
-Three levels, and an animal to rescue in each one.
+There are three levels, and an animal to rescue in each one.
 
 ```js cell id="levels" from="palette" uses="cpc"
 const alias = {
@@ -234,17 +238,23 @@ for (let index = 0; index < LEVELS; index++) {
 return { names, draw }
 ```
 
+### Level 1, rescue Mizzie
+
 The shortest of the three and the kindest: birds, mines, platforms, and water not to be touched. Mizzie the sheep is waiting at the end.
 
 ```js cell from="levels" caption="Mizzie's level, whole"
 return levels.draw(0)
 ```
 
+### Level 2, rescue Donald
+
 The second brings new enemies: big birds with a weird way of spelling, and slugs. Donald the duck is waiting at the end of this one.
 
 ```js cell from="levels" caption="Donald's level, whole"
 return levels.draw(1)
 ```
+
+### Level 3, rescue Gunter!
 
 The last is the longest and the hardest, and your loyal friend Gunter is at the end of it.
 

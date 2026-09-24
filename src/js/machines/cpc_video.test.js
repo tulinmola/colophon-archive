@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import cpcVideoFrom from "./cpc_video.js"
+import cpcVideoFrom from "./cpc_video"
 
 const INKS = Array.from({ length: 16 }, (unused, pen) => pen),
   BLUE = 2

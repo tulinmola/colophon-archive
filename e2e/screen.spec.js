@@ -1,4 +1,4 @@
-import { cell, standUp } from "./fixture.js"
+import { cell, standUp } from "./fixture"
 import { expect, test } from "@playwright/test"
 
 const SNAPSHOT = "/playground/abduction/abduction.sna"

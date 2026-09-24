@@ -1,3 +1,3 @@
-import Cell from "./cell.js"
+import Cell from "./cell"
 
 customElements.define("colophon-cell", Cell)

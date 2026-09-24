@@ -1,4 +1,4 @@
-import colourFrom from "./colours.js"
+import colourFrom from "./colours"
 
 // GATE_ARRAY_SAMPLES_PER_CHARACTER in the emulator's gate_array.h, after "The
 // Gate Array" (https://www.grimware.org/doku.php/documentations/devices/gatearray):

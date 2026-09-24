@@ -7,7 +7,7 @@ The desk where colophons are written, and the tools for writing them. The machin
 A witness cannot leave the machine that holds it. The games are other people's, so no server, no CI and no published page may hold one. Derivation happens where the witness is — an author's machine, a reviewer's, a reader's browser holding their own copy — and the record is what crosses to the machines without it.
 
 - `generator/` is Node. It composes markup and never executes a cell, and must run with no Vite in the process, because CI calls it directly.
-- `src/js/executor.js` is host-neutral: no `document`, no `node:` anything, plain ESM, relative imports, no bare specifiers.
+- `src/js/executor.js` is host-neutral: no `document`, no `node:` anything, relative imports and no bare specifiers, so it runs wherever a colophon is derived.
 - `src/js/` is the browser's alone. A cell is a `<colophon-cell>`, which builds its own controls: the generator emits the element and the code inside it, never the interface. An element that has not upgraded renders its children, so a page with no script is the code alone.
 - Vite is the dev server, never the renderer.
 - The machine is compiled here, by Emscripten, from a checkout of the emulator standing beside this one, and the module is named for the commit it was built from and the host it was built with. A host function is added the day a colophon needs it and not before.
@@ -30,7 +30,8 @@ A published page reads with no execution at all: the statics are the publication
 - Never hide a real error in a guard. Check only what can legitimately vary at runtime — input from the network, a file being written. Checking what this repository owns turns our bug into silence.
 - Markup is composed by the `html` tag, which exists so that Prettier formats what is inside it. Text is escaped where it is interpolated, with `escapeHtml`.
 - A folder's `index.js` is its surface and where reading starts. Everything else in the folder is internal and imports its siblings directly.
-- The export shape is the module's contract: `default` where the module is one thing, named where it offers several, never both. Mixing hands the caller a decision that was ours to make.
+- An import names the module, and a folder by the folder. `generator/` is the exception: CI runs it under bare Node with nothing to resolve for it, so its own imports are written out in full, as is `src/js/vendor/`, which is somebody else's file.
+- The export shape is the module's contract: `default` where the module is one thing, named where it offers several, never both. Mixing hands the caller a decision that was ours to make. It stands at the end of the file, so a module's surface is read in one place.
 - A comment is a battle the code lost, and the fix is never the comment. A name that does not say what the thing is: rename it. A diary entry nobody wants on Thursday: delete it. A claim about the code: it is a lie already or will become one. Worst, a design that has to be argued for in prose to be understood: prose is where that argument hides instead of being settled, so settle it. What survives is a fact no name can carry — an upstream constraint, a clause of a spec — and there is one such fact here, standing in both copies of `html.js`. In a test the name is that slot: a comment above one is a name that was not found.
 - A source is cited where it is used, in the code that depends on it: the link, and what was taken from it. Provenance is the one thing a name cannot carry, so a citation is the comment that is never a battle lost.
 - Prefer `==`, and `===` only where strictly needed. `for...of` unless index arithmetic is wanted; avoid `.forEach`. Prefer `function` over arrows except for a short single expression.

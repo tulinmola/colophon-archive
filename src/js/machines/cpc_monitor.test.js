@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import cpcMonitorFrom from "./cpc_monitor.js"
+import cpcMonitorFrom from "./cpc_monitor"
 
 const RASTER = 1024,
   LINES = 312,

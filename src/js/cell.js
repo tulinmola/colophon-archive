@@ -1,6 +1,6 @@
-import MACHINES from "./machines.js"
-import execute from "./executor.js"
-import html from "./html.js"
+import MACHINES from "./machines"
+import execute from "./executor"
+import html from "./html"
 
 const PLAY = html`<svg data-play viewBox="0 0 16 16" aria-hidden="true">
   <path d="M5 3.2v9.6l8-4.8z" fill="currentColor" />
