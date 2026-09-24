@@ -75,6 +75,81 @@ uint8_t archive_cpc_video_mode(void) { return cpc.gate_array.mode; }
 
 uint8_t archive_cpc_ink(uint8_t pen) { return cpc.gate_array.inks[pen]; }
 
+/* The registers a call is given and answers with, in the order the archive
+   counts them. The CPU keeps them as halves, and so does this. */
+#define ARCHIVE_REGISTERS 12
+
+static uint8_t registers[ARCHIVE_REGISTERS];
+
+uint8_t *archive_registers(void) { return registers; }
+
+void archive_read_registers(void) {
+  registers[0] = cpc.cpu.a;
+  registers[1] = cpc.cpu.f;
+  registers[2] = cpc.cpu.b;
+  registers[3] = cpc.cpu.c;
+  registers[4] = cpc.cpu.d;
+  registers[5] = cpc.cpu.e;
+  registers[6] = cpc.cpu.h;
+  registers[7] = cpc.cpu.l;
+  registers[8] = cpc.cpu.ixh;
+  registers[9] = cpc.cpu.ixl;
+  registers[10] = cpc.cpu.iyh;
+  registers[11] = cpc.cpu.iyl;
+}
+
+static void archive_write_registers(void) {
+  cpc.cpu.a = registers[0];
+  cpc.cpu.f = registers[1];
+  cpc.cpu.b = registers[2];
+  cpc.cpu.c = registers[3];
+  cpc.cpu.d = registers[4];
+  cpc.cpu.e = registers[5];
+  cpc.cpu.h = registers[6];
+  cpc.cpu.l = registers[7];
+  cpc.cpu.ixh = registers[8];
+  cpc.cpu.ixl = registers[9];
+  cpc.cpu.iyh = registers[10];
+  cpc.cpu.iyl = registers[11];
+}
+
+/* The address a call is told to return to. Nothing is ever fetched from it,
+   because the run stops the moment PC stands there. */
+#define ARCHIVE_RETURN_TO 0xFFFF
+
+bool archive_call(uint16_t address, bool interrupts, uint32_t frames) {
+  const uint64_t ticks = (uint64_t)frames * CPC_TICKS_PER_STANDARD_FRAME;
+  const bool iff1 = cpc.cpu.iff1, iff2 = cpc.cpu.iff2;
+
+  cpc_finish_instruction(&cpc);
+  archive_write_registers();
+
+  cpc.cpu.sp = (uint16_t)(cpc.cpu.sp - 2);
+  cpc_poke(&cpc, cpc.cpu.sp, ARCHIVE_RETURN_TO & 0xFF);
+  cpc_poke(&cpc, (uint16_t)(cpc.cpu.sp + 1), ARCHIVE_RETURN_TO >> 8);
+  cpc.cpu.pc = address;
+
+  if (!interrupts) {
+    cpc.cpu.iff1 = false;
+    cpc.cpu.iff2 = false;
+  }
+
+  bool returned = false;
+  for (uint64_t at = 0; at < ticks && !returned; at++) {
+    cpc_tick(&cpc);
+    returned = cpc.cpu.pc == ARCHIVE_RETURN_TO && z80_instruction_complete(&cpc.cpu);
+  }
+
+  if (!interrupts) {
+    cpc.cpu.iff1 = iff1;
+    cpc.cpu.iff2 = iff2;
+  }
+
+  archive_read_registers();
+
+  return returned;
+}
+
 void archive_run_frames(uint32_t frames) {
   const uint64_t ticks = (uint64_t)frames * CPC_TICKS_PER_STANDARD_FRAME;
 

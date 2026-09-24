@@ -1,3 +1,3 @@
-import ColophonEmulator from "../vendor/colophon-emulator-0acb962-285ba8d.mjs"
+import ColophonEmulator from "../vendor/colophon-emulator-0acb962-d95ba2a.mjs"
 
 export default ColophonEmulator

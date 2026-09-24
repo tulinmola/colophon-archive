@@ -1,8 +1,6 @@
 import { cell, standUp } from "./fixture.js"
 import { expect, test } from "@playwright/test"
 
-// The colophon's own artifact, which is where a witness lives: no second copy
-// is kept for the tests, and none is committed.
 const SNAPSHOT = "/playground/abduction/abduction.sna"
 
 async function pictureIn(page, id) {
@@ -91,4 +89,71 @@ return machine.monitor()`
   await page.locator("#unplugged [data-derive]").click()
 
   await expect(page.locator("#unplugged output")).toHaveText(/no monitor plugged in/u)
+})
+
+// LD A,#42 / LD (&4000),A / RET
+const ROUTINE = "0x3e, 0x42, 0x32, 0x00, 0x40, 0xc9"
+
+test("calls a routine the machine holds, and comes back", async function ({ page }) {
+  const source = `const machine = await cpc({ snapshot: "${SNAPSHOT}" })
+
+machine.ram.set([${ROUTINE}], 0x4100)
+
+machine.call(0x4100)
+
+return machine.ram[0x4000]`
+
+  await standUp(page, [cell({ id: "called", uses: "cpc", source })])
+  await page.locator("#called [data-derive]").click()
+
+  await expect(page.locator("#called output")).toHaveText("66")
+})
+
+test("gives up on a routine that never returns", async function ({ page }) {
+  const source = `const machine = await cpc({ snapshot: "${SNAPSHOT}" })
+
+machine.ram.set([0x18, 0xfe], 0x4100)
+
+machine.call(0x4100)
+
+return "never reached"`
+
+  await standUp(page, [cell({ id: "endless", uses: "cpc", source })])
+  await page.locator("#endless [data-derive]").click()
+
+  await expect(page.locator("#endless output")).toHaveText(
+    "Error: &4100 did not return within a frame"
+  )
+})
+
+test("hands a call the registers it names, and answers with them", async function ({ page }) {
+  // PUSH IX / POP HL / RET. Under DD both halves of an HL operand become IX
+  // halves, so there is no LD H,IXH to encode.
+  const source = `const machine = await cpc({ snapshot: "${SNAPSHOT}" })
+
+machine.ram.set([0xdd, 0xe5, 0xe1, 0xc9], 0x4100)
+
+const answer = machine.call(0x4100, { ix: 0xabcd, interrupts: false })
+
+return answer.hl`
+
+  await standUp(page, [cell({ id: "given", uses: "cpc", source })])
+  await page.locator("#given [data-derive]").click()
+
+  await expect(page.locator("#given output")).toHaveText("43981")
+})
+
+test("refuses a register the machine does not keep", async function ({ page }) {
+  const source = `const machine = await cpc({ snapshot: "${SNAPSHOT}" })
+
+machine.ram.set([0xc9], 0x4100)
+
+return machine.call(0x4100, { hx: 1 })`
+
+  await standUp(page, [cell({ id: "unknown", uses: "cpc", source })])
+  await page.locator("#unknown [data-derive]").click()
+
+  await expect(page.locator("#unknown output")).toHaveText(
+    "Error: hx is no register a call is given"
+  )
 })
