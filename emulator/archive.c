@@ -5,6 +5,7 @@
  * game that has switched both ROMs out never reads one.
  */
 #include <stdbool.h>
+#include <string.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -111,6 +112,39 @@ static void archive_write_registers(void) {
   cpc.cpu.ixl = registers[9];
   cpc.cpu.iyh = registers[10];
   cpc.cpu.iyl = registers[11];
+}
+
+/* A state is the machine's own structs and its RAM, taken whole. The host's
+   storage goes back in afterwards, and cpc_remap is owed by "anything that
+   sets those registers from outside — restoring a snapshot". */
+#define ARCHIVE_STATE_SIZE (sizeof(cpc_t) + ARCHIVE_RAM_SIZE)
+
+static uint8_t state[ARCHIVE_STATE_SIZE];
+
+uint8_t *archive_state(void) { return state; }
+
+uint32_t archive_state_size(void) { return sizeof state; }
+
+void archive_save_state(void) {
+  cpc_finish_instruction(&cpc);
+
+  memcpy(state, &cpc, sizeof cpc);
+  memcpy(state + sizeof cpc, ram, sizeof ram);
+}
+
+void archive_load_state(bool monitor) {
+  memcpy(&cpc, state, sizeof cpc);
+  memcpy(ram, state + sizeof cpc, sizeof ram);
+
+  cpc.ram = ram;
+  cpc.lower_rom = rom;
+  cpc.monitor.framebuffer = NULL;
+
+  if (monitor) {
+    cpc_connect_monitor(&cpc, framebuffer);
+  }
+
+  cpc_remap(&cpc);
 }
 
 /* The address a call is told to return to. Nothing is ever fetched from it,

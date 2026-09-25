@@ -14,16 +14,13 @@ function problemIn(emulator) {
   return letters.join("")
 }
 
-async function cpcFrom({ snapshot, ramBytes, monitor }) {
-  const emulator = await loadEmulator(),
-    capacity = emulator._archive_snapshot_capacity()
+function loadSnapshot(emulator, snapshot, monitor) {
+  const capacity = emulator._archive_snapshot_capacity(),
+    fits = snapshot.length <= capacity
 
-  const fits = snapshot.length <= capacity
   if (!fits) {
     throw new Error(`a snapshot of ${snapshot.length} bytes does not fit in ${capacity}`)
   }
-
-  emulator._archive_boot_cpc(ramBytes)
 
   if (monitor) {
     emulator._archive_connect_monitor()
@@ -37,8 +34,29 @@ async function cpcFrom({ snapshot, ramBytes, monitor }) {
   if (!loaded) {
     throw new Error(problemIn(emulator))
   }
+}
 
-  const registersAt = emulator._archive_registers(),
+function loadState(emulator, state, monitor) {
+  const stateAt = emulator._archive_state()
+
+  emulator.HEAPU8.set(state, stateAt)
+  emulator._archive_load_state(monitor)
+}
+
+async function cpcFrom({ snapshot, state, ramBytes, monitor }) {
+  const emulator = await loadEmulator()
+
+  emulator._archive_boot_cpc(ramBytes)
+
+  if (state) {
+    loadState(emulator, state, monitor)
+  } else {
+    loadSnapshot(emulator, snapshot, monitor)
+  }
+
+  const stateAt = emulator._archive_state(),
+    stateSize = emulator._archive_state_size(),
+    registersAt = emulator._archive_registers(),
     ramAt = emulator._archive_ram(),
     framebufferAt = emulator._archive_monitor(),
     raster = emulator._archive_monitor_width(),
@@ -52,6 +70,8 @@ async function cpcFrom({ snapshot, ramBytes, monitor }) {
     call: emulator._archive_call,
     registers: emulator.HEAPU8.subarray(registersAt, registersAt + ARCHIVE_REGISTERS),
     readRegisters: emulator._archive_read_registers,
+    state: emulator.HEAPU8.subarray(stateAt, stateAt + stateSize),
+    saveState: emulator._archive_save_state,
     ink: emulator._archive_cpc_ink,
     runFrames: emulator._archive_run_frames,
     videoCharacters: emulator._archive_cpc_video_characters,

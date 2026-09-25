@@ -245,6 +245,29 @@ test("puts the words a cell was given under what it found", async function ({ pa
   await expect(page.locator("output img")).toHaveAttribute("alt", "")
 })
 
+test("shows bytes as how many, under the words it was given", async function ({ page }) {
+  const source = "return { state: new Uint8Array(3) }",
+    written = cell({ source }).replace("<colophon-cell", `<colophon-cell caption="Three of them"`)
+
+  await standUp(page, [written])
+  await page.locator("[data-derive]").click()
+
+  await expect(page.locator("output")).toContainText('"state": "3 bytes"')
+  await expect(page.locator("output figcaption")).toHaveText("Three of them")
+})
+
+test("says what it rests on, with the cells it derives from as links", async function ({ page }) {
+  const two = cell({ id: "two", source: "return 2" }),
+    resting = cell({ id: "resting", from: "two", uses: "cpc", source: "return 3" })
+
+  await standUp(page, [two, resting])
+  await page.locator("#resting [data-fold]").click()
+
+  await expect(page.locator("#resting [data-declarations]")).toHaveText("uses cpc · from two")
+  await expect(page.locator("#resting [data-declarations] a")).toHaveAttribute("href", "#two")
+  await expect(page.locator("#two [data-declarations]")).toHaveCount(0)
+})
+
 test("a cell written in a colophon becomes one on the page", async function ({ page }) {
   await page.goto("/playground/cells/")
 

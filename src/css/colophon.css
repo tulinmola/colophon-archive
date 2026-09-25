@@ -159,10 +159,22 @@ colophon-cell {
     grid-row: 2;
   }
 
-  & pre {
-    font-size: 0.8rem;
+  & > [data-working] {
     grid-column: 1 / -1;
     grid-row: 3;
+    min-width: 0;
+  }
+
+  & [data-declarations] {
+    color: var(--faint);
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    margin: 0 0 0.4rem;
+  }
+
+  & pre {
+    font-size: 0.8rem;
     margin: 0;
     min-width: 0;
   }

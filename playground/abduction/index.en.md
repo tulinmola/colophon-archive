@@ -13,6 +13,19 @@ It's a fast right-scrolling run-and-jump game: you jump, slide under hovering al
 
 Reviewers praise its colourful graphics, smooth animation and animated intro.
 
+## Loading
+
+The game arrives packed and takes itself apart before anything reaches the screen. Where it puts the pieces is the point: it writes over the memory the firmware keeps for its own workings. Nothing could have loaded them there from tape or disc, because loading is the firmware's job and those are the bytes it does the job with. They can only be put there afterwards, by a game that no longer needs it.
+
+```js cell id="unpacked" uses="cpc" caption="The machine with the game unpacked"
+const machine = await cpc({ model: 6128, snapshot: "abduction.sna" })
+
+// The load arrives compressed, and the game unpacks it as it runs.
+machine.runFrames(160)
+
+return { state: machine.state() }
+```
+
 ## The main menu
 
 The main menu, as a player meets it.
@@ -60,7 +73,7 @@ Everything left over is border, which costs nothing at all. 4 + 16 = 20K, for a 
 
 The game's 16 colours, like any other CPC mode 0 game. But moving from one section to the next, it fades the screen out and back in. To make that fade beautiful there are 8 hand-crafted palettes, running from pitch black up to the full thing.
 
-```js cell id="palette" uses="cpc" caption="The palette and its faders"
+```js cell id="palette" from="unpacked" uses="cpc" caption="The palette and its faders"
 const alias = { palettes: 0x3f80 }
 
 const PALETTE_SIZE = 16,
@@ -69,10 +82,7 @@ const PALETTE_SIZE = 16,
   GAP = 2,
   HALF_GAP = GAP / 2
 
-const machine = await cpc({ model: 6128, snapshot: "abduction.sna" })
-
-// The load arrives compressed, and the game unpacks it as it runs.
-machine.runFrames(160)
+const machine = await cpc({ state: unpacked.state })
 
 // interrupts_startFadeIn walks up these eight and interrupts_startFadeOut
 // walks back down, a palette to a frame. renderer_setBackgroundInks writes pen
@@ -111,7 +121,7 @@ The leftmost colour is the background. It changes with the level, taking its col
 
 There are three levels, and an animal to rescue in each one.
 
-```js cell id="levels" from="palette" uses="cpc"
+```js cell id="levels" from="palette unpacked" uses="cpc"
 const alias = {
   game_levels: 0x0467,
   renderer_getScreenPointer_asm: 0x1672,
@@ -153,12 +163,9 @@ function nameIn(ram, at) {
 }
 
 const draw = async function (index) {
-  const machine = await cpc({ model: 6128, snapshot: "abduction.sna" }),
+  const machine = await cpc({ state: unpacked.state }),
     level = alias.game_levels + index * LEVEL_SIZE,
     terms = { interrupts: false, withinFrames: 30 }
-
-  // The load arrives compressed, and the game unpacks it as it runs.
-  machine.runFrames(160)
 
   // game_start's own clears, less the ones a drawing does not need.
   machine.call(alias.renderer_clear_asm, { ix: level, hl: 0, ...terms })
@@ -222,9 +229,7 @@ const draw = async function (index) {
   return { image: canvas.toDataURL("image/png") }
 }
 
-const machine = await cpc({ model: 6128, snapshot: "abduction.sna" })
-
-machine.runFrames(160)
+const machine = await cpc({ state: unpacked.state })
 
 const names = []
 

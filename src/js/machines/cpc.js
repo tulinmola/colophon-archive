@@ -43,6 +43,14 @@ class Cpc {
     this.#machine.runFrames(frames)
   }
 
+  state() {
+    const machine = this.#machine
+
+    machine.saveState()
+
+    return Uint8Array.from(machine.state)
+  }
+
   call(address, options) {
     const { interrupts = true, withinFrames = 1, ...wanted } = options ?? {},
       machine = this.#machine
@@ -101,15 +109,15 @@ class Cpc {
   }
 }
 
-async function cpc({ model = 6128, snapshot, monitor = false }) {
+async function cpc({ model = 6128, snapshot, state, monitor = false }) {
   const ramBytes = RAM_BYTES[model]
 
   if (!ramBytes) {
     throw new Error(`${model} is not a CPC this stands up`)
   }
 
-  const bytes = await fetchBytes(snapshot),
-    machine = await cpcFrom({ snapshot: bytes, ramBytes, monitor })
+  const bytes = snapshot ? await fetchBytes(snapshot) : null,
+    machine = await cpcFrom({ snapshot: bytes, state, ramBytes, monitor })
 
   return new Cpc(machine, monitor)
 }

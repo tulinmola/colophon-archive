@@ -157,3 +157,22 @@ return machine.call(0x4100, { hx: 1 })`
     "Error: hx is no register a call is given"
   )
 })
+
+test("stands a machine at a state another cell handed it", async function ({ page }) {
+  const kept = `const machine = await cpc({ snapshot: "${SNAPSHOT}" })
+
+machine.ram[0x4000] = 0x5a
+
+return { state: machine.state() }`,
+    again = `const machine = await cpc({ state: kept.state })
+
+return machine.ram[0x4000]`
+
+  await standUp(page, [
+    cell({ id: "kept", uses: "cpc", source: kept }),
+    cell({ id: "again", from: "kept", uses: "cpc", source: again })
+  ])
+  await page.locator("#again [data-derive]").click()
+
+  await expect(page.locator("#again output")).toHaveText("90")
+})

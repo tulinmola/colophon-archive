@@ -9,6 +9,7 @@
   "_archive_cpc_video_rows",
   "_archive_cpc_video_start",
   "_archive_load_snapshot",
+  "_archive_load_state",
   "_archive_monitor",
   "_archive_monitor_height",
   "_archive_monitor_width",
@@ -19,6 +20,9 @@
   "_archive_ram_capacity",
   "_archive_rgb",
   "_archive_run_frames",
+  "_archive_save_state",
   "_archive_snapshot",
-  "_archive_snapshot_capacity"
+  "_archive_snapshot_capacity",
+  "_archive_state",
+  "_archive_state_size"
 ]

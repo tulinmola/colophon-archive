@@ -1,6 +1,6 @@
+import { escapeHtml, html } from "./html"
 import MACHINES from "./machines"
 import execute from "./executor"
-import html from "./html"
 
 const PLAY = html`<svg data-play viewBox="0 0 16 16" aria-hidden="true">
   <path d="M5 3.2v9.6l8-4.8z" fill="currentColor" />
@@ -44,8 +44,36 @@ function captionedBy(picture, text) {
   return figure
 }
 
+// A state, or a file, is bytes; a page shows how many rather than which.
+function sizeOfBinary(key, value) {
+  const binary = ArrayBuffer.isView(value)
+
+  return binary ? `${value.length} bytes` : value
+}
+
+function linkTo(id) {
+  const name = escapeHtml(id)
+
+  return html`<a href="#${name}">${name}</a>`
+}
+
+function declarationsFrom(uses, from) {
+  const declares = uses.length + from.length > 0
+
+  if (!declares) {
+    return ""
+  }
+
+  const linked = from.map(linkTo),
+    used = uses.length > 0 ? `uses ${escapeHtml(uses.join(" "))}` : "",
+    between = uses.length > 0 && from.length > 0 ? " · " : "",
+    derived = from.length > 0 ? `from ${linked.join(" ")}` : ""
+
+  return html`<p data-declarations>${used}${between}${derived}</p>`
+}
+
 function textFrom(value) {
-  const asJson = JSON.stringify(value, null, 2),
+  const asJson = JSON.stringify(value, sizeOfBinary, 2),
     isRepresentable = asJson != null
 
   return isRepresentable ? asJson : String(value)
@@ -69,19 +97,22 @@ class Cell extends HTMLElement {
     this.#teardown = new AbortController()
     const { signal } = this.#teardown
 
-    const block = this.querySelector("pre")
+    const block = this.querySelector("pre"),
+      uses = this.#namesIn("uses"),
+      from = this.#namesIn("from"),
+      declarations = declarationsFrom(uses, from)
 
     this.innerHTML = html`
       <output>${UNASKED}</output>
       <button type="button" data-derive title="Derive">${PLAY}${AGAIN}</button>
       <button type="button" data-fold title="The working" aria-expanded="false">${WORKING}</button>
-      ${block.outerHTML}
+      <div data-working>${declarations}${block.outerHTML}</div>
     `
 
     this.#button = this.querySelector("[data-derive]")
     this.#fold = this.querySelector("[data-fold]")
     this.#output = this.querySelector("output")
-    this.#working = this.querySelector("pre")
+    this.#working = this.querySelector("[data-working]")
 
     this.#working.hidden = true
 
@@ -223,20 +254,22 @@ class Cell extends HTMLElement {
   }
 
   #show(result) {
-    const failed = result.error != null,
-      image = result.value?.image
+    const failed = result.error != null
 
-    if (image) {
-      const caption = this.getAttribute("caption"),
-        picture = pictureFrom(image),
-        shown = caption ? captionedBy(picture, caption) : picture
+    if (failed) {
+      this.#output.replaceChildren(result.error)
+      this.dataset.state = "failed"
 
-      this.#output.replaceChildren(shown)
-    } else {
-      this.#output.textContent = failed ? result.error : textFrom(result.value)
+      return
     }
 
-    this.dataset.state = failed ? "failed" : "derived"
+    const image = result.value?.image,
+      found = image ? pictureFrom(image) : textFrom(result.value),
+      caption = this.getAttribute("caption"),
+      shown = caption ? captionedBy(found, caption) : found
+
+    this.#output.replaceChildren(shown)
+    this.dataset.state = "derived"
   }
 }
 
