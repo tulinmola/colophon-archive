@@ -1,6 +1,9 @@
 import { escapeHtml, html } from "./html"
 import MACHINES from "./machines"
 import execute from "./executor"
+import gif from "./gif"
+
+const USABLE = { ...MACHINES, gif }
 
 const PLAY = html`<svg data-play viewBox="0 0 16 16" aria-hidden="true">
   <path d="M5 3.2v9.6l8-4.8z" fill="currentColor" />
@@ -220,12 +223,12 @@ class Cell extends HTMLElement {
     const inputs = {}
 
     for (const name of this.#namesIn("uses")) {
-      const machine = MACHINES[name]
-      if (!machine) {
-        return { error: `uses ${name}, which is no machine the archive stands up` }
+      const usable = USABLE[name]
+      if (!usable) {
+        return { error: `uses ${name}, which is nothing the archive stands up` }
       }
 
-      inputs[name] = machine
+      inputs[name] = usable
     }
 
     for (const id of this.#namesIn("from")) {

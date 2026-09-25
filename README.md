@@ -34,4 +34,4 @@ The tools are to be learned from the first colophons rather than designed ahead 
 
 ## License
 
-MIT, like the rest of Colophon.
+MIT, like the rest of Colophon. What is vendored in `src/js/vendor/` keeps its own: [gifenc](https://github.com/mattdesl/gifenc), by Matt DesLauriers, is MIT, and its licence stands beside it.

@@ -209,14 +209,14 @@ test("hands a cell the machine it says it uses", async function ({ page }) {
   await expect(page.locator("output")).toHaveText('"function"')
 })
 
-test("refuses a machine the archive does not stand up", async function ({ page }) {
+test("refuses what the archive does not stand up", async function ({ page }) {
   const cells = [cell({ uses: "ghost", source: "return 1" })]
 
   await standUp(page, cells)
   await page.locator("[data-derive]").click()
 
   await expect(page.locator("output")).toHaveText(
-    "uses ghost, which is no machine the archive stands up"
+    "uses ghost, which is nothing the archive stands up"
   )
 })
 
